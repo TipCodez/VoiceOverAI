@@ -1,0 +1,3 @@
+flet
+pyttsx3
+pydub 
