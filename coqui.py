@@ -16,9 +16,9 @@ import datetime
 client = Murf(api_key="ap2_8051e08c-7fcc-4b99-9d84-ba9c5df2328b")
 # client = Murf(api_key=API_KEY)
 
-voices = client.text_to_speech.get_voices()
-for voice in voices:
-    print(f"Voice ID: {voice.voice_id}, Name: {voice.display_name}, Moods: {voice.available_styles}")
+# voices = client.text_to_speech.get_voices()
+# for voice in voices:
+#     print(f"Voice ID: {voice.voice_id}, Name: {voice.display_name}, Moods: {voice.available_styles}")
 
 # Voice Settings
 VOICE_MOODS = {
