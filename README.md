@@ -19,14 +19,14 @@ This is the offline version of AI TipKode, a beautiful, modern text-to-speech (T
 1. **Clone the repository or download the source code.**
 2. **Install dependencies:**
    ```bash
-   pip install -r requirements_offline.txt
+   pip install -r requirements.txt
    ```
    - For mp3 export, you also need ffmpeg installed and in your PATH (for pydub).
 
 ## Usage
 1. **Run the app:**
    ```bash
-   python offline.py
+   python main.py
    ```
 2. **Enter your text, select voice/mood, and click 'Generate Voice'.**
 3. **Play, pause, resume, download, or delete any generated audio from the dropdown.**

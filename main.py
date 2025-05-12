@@ -271,11 +271,11 @@ def main(page: ft.Page):
         reset_word_highlight()
 
     # Buttons
-    btn_play = ft.IconButton(icon=ft.icons.PLAY_ARROW, tooltip="Play", on_click=play_audio, icon_color="#FFD700")
-    btn_pause = ft.IconButton(icon=ft.icons.PAUSE, tooltip="Pause", on_click=pause_audio, icon_color="#FFD700")
-    btn_unpause = ft.IconButton(icon=ft.icons.REPLAY, tooltip="Unpause", on_click=unpause_audio, icon_color="#FFD700")
-    btn_download = ft.IconButton(icon=ft.icons.DOWNLOAD, tooltip="Download", on_click=download_audio, icon_color="#FFD700")
-    btn_delete = ft.IconButton(icon=ft.icons.DELETE, tooltip="Delete", on_click=delete_audio, icon_color="#FFD700")
+    btn_play = ft.IconButton(icon=ft.Icons.PLAY_ARROW, tooltip="Play", on_click=play_audio, icon_color="#FFD700")
+    btn_pause = ft.IconButton(icon=ft.Icons.PAUSE, tooltip="Pause", on_click=pause_audio, icon_color="#FFD700")
+    btn_unpause = ft.IconButton(icon=ft.Icons.REPLAY, tooltip="Unpause", on_click=unpause_audio, icon_color="#FFD700")
+    btn_download = ft.IconButton(icon=ft.Icons.DOWNLOAD, tooltip="Download", on_click=download_audio, icon_color="#FFD700")
+    btn_delete = ft.IconButton(icon=ft.Icons.DELETE, tooltip="Delete", on_click=delete_audio, icon_color="#FFD700")
     btn_enter = ft.ElevatedButton(
         "Generate Voice",
         bgcolor="#FFD700",
@@ -295,7 +295,7 @@ def main(page: ft.Page):
     def open_settings(e):
         pass
     btn_settings = ft.IconButton(
-        icon=ft.icons.SETTINGS,
+        icon=ft.Icons.SETTINGS,
         tooltip="Settings",
         on_click=open_settings,
         icon_color="#FFD700",
