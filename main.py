@@ -6,6 +6,7 @@ import time
 import datetime
 import sys
 import tempfile
+from pydub import AudioSegment
 
 # Setup pyttsx3 engine
 engine = pyttsx3.init()
