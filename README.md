@@ -17,7 +17,15 @@ This is the offline version of AI TipKode, a beautiful, modern text-to-speech (T
 
 ## Installation
 1. **Clone the repository or download the source code.**
-2. **Install dependencies:**
+2. **Create and activate a virtual environment:**
+   ```bash
+   python -m venv .venv
+   # On Windows:
+   .venv\Scripts\activate
+   # On Mac/Linux:
+   source .venv/bin/activate
+   ```
+3. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
