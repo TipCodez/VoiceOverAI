@@ -147,6 +147,7 @@ def main(page: ft.Page):
         filepath = selected_audio.current
         if filepath and os.path.exists(filepath):
             page.overlay.clear()
+            page.overlay.append(file_picker)
             page.overlay.append(ft.Audio(src=filepath, autoplay=True))
             page.update()
             highlighting_active.set()
@@ -158,6 +159,7 @@ def main(page: ft.Page):
     def pause_audio(e=None):
         # Not supported in flet_audio, but you can clear overlay
         page.overlay.clear()
+        page.overlay.append(file_picker)
         highlighting_active.clear()
         page.update()
 
@@ -216,6 +218,7 @@ def main(page: ft.Page):
                 audio_dropdown.value = None
                 selected_audio.current = None
             page.overlay.clear()
+            page.overlay.append(file_picker)
         except Exception as ex:
             status_text.value = f"Delete error: {ex}"
         page.update()
@@ -259,6 +262,7 @@ def main(page: ft.Page):
 
             # Play the temp audio
             page.overlay.clear()
+            page.overlay.append(file_picker)
             page.overlay.append(ft.Audio(src=temp_audio_path.current, autoplay=True))
             loading_indicator.visible = False
             page.update()
