@@ -59,5 +59,3 @@ This is the offline version of **Audiora**, a beautiful, modern text-to-speech (
 
 ## License
 MIT License 
-
-page.title = "Audiora" 

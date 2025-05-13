@@ -224,7 +224,13 @@ def main(page: ft.Page):
         page.update()
 
     def exit_app(e=None):
-        page.window_close()
+        if hasattr(page, "window_close"):
+            page.window_close()
+        elif hasattr(page, "window_destroy"):
+            page.window_destroy()
+        else:
+            status_text.value = "You can now close this window."
+            page.update()
 
     def save_and_play(e):
         loading_indicator.visible = True
