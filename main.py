@@ -224,13 +224,27 @@ def main(page: ft.Page):
         page.update()
 
     def exit_app(e=None):
-        if hasattr(page, "window_close"):
+        try:
             page.window_close()
-        elif hasattr(page, "window_destroy"):
-            page.window_destroy()
-        else:
-            status_text.value = "You can now close this window."
-            page.update()
+        except Exception:
+            try:
+                page.window_destroy()
+            except Exception:
+                page.controls.clear()
+                page.add(
+                    ft.Row([
+                        ft.Container(
+                            ft.Text("Audiora has exited. You can now close this window.", size=18, color="#FFD700"),
+                            alignment=ft.alignment.center,
+                            padding=10,
+                            border_radius=12,
+                            bgcolor="#23234A",
+                            height=50,
+                            shadow=ft.BoxShadow(blur_radius=8, spread_radius=2, color="#FFD700", offset=ft.Offset(0, 2)),
+                        )
+                    ], alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.CENTER, expand=True)
+                )
+                page.update()
 
     def save_and_play(e):
         loading_indicator.visible = True
