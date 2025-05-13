@@ -7,6 +7,8 @@ import datetime
 import sys
 import tempfile
 # import pydub
+import PyPDF2
+import docx
 
 # Setup pyttsx3 engine
 engine = pyttsx3.init()
@@ -285,6 +287,45 @@ def main(page: ft.Page):
                 pass
         reset_word_highlight()
 
+    # FilePicker for importing text
+    def on_file_selected(ev):
+        file_path = ev.files[0].path if ev.files else None
+        if not file_path:
+            status_text.value = "No file selected."
+            page.update()
+            return
+        ext = os.path.splitext(file_path)[1].lower()
+        try:
+            if ext == '.txt':
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    text_input.value = f.read()
+            elif ext == '.docx':
+                doc = docx.Document(file_path)
+                text_input.value = '\n'.join([p.text for p in doc.paragraphs])
+            elif ext == '.pdf':
+                with open(file_path, 'rb') as f:
+                    reader = PyPDF2.PdfReader(f)
+                    text = ''
+                    for page_ in reader.pages:
+                        text += page_.extract_text() or ''
+                    text_input.value = text
+            else:
+                status_text.value = "Unsupported file type."
+                page.update()
+                return
+            status_text.value = f"Imported text from {os.path.basename(file_path)}"
+            reset_word_highlight()
+            page.update()
+        except Exception as ex:
+            status_text.value = f"Import error: {ex}"
+            page.update()
+
+    file_picker = ft.FilePicker(on_result=on_file_selected)
+    page.overlay.append(file_picker)
+
+    def import_text_file(e=None):
+        file_picker.pick_files(allow_multiple=False, allowed_extensions=['txt', 'docx', 'pdf'])
+
     # Buttons
     btn_play = ft.IconButton(icon=ft.Icons.PLAY_ARROW, tooltip="Play", on_click=play_audio, icon_color="#FFD700")
     btn_pause = ft.IconButton(icon=ft.Icons.PAUSE, tooltip="Pause", on_click=pause_audio, icon_color="#FFD700")
@@ -303,6 +344,13 @@ def main(page: ft.Page):
         bgcolor="#FFD700",
         color="#1E1E2F",
         on_click=exit_app,
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
+    )
+    btn_import = ft.ElevatedButton(
+        "Import Text",
+        bgcolor="#FFD700",
+        color="#1E1E2F",
+        on_click=import_text_file,
         style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
     )
 
@@ -329,7 +377,7 @@ def main(page: ft.Page):
                 voice_selection,
                 mood_selection,
                 ft.Text("Adjust Speed", size=18, weight=ft.FontWeight.BOLD, color="#FFD700"),
-                speed_slider, btn_enter, audio_dropdown,
+                speed_slider, btn_import, btn_enter, audio_dropdown,
                 ft.Row([btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_settings, btn_exit], alignment=ft.MainAxisAlignment.CENTER),
                 loading_indicator, status_text
             ],
