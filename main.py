@@ -132,36 +132,20 @@ def main(page: ft.Page):
 
     text_input.on_change = on_text_input_change
 
-    def select_audio_file(filename):
-        # Look for file in temp or offline_audio
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
-        offline_path = os.path.join(ASSETS_DIR, filename)
-        if os.path.exists(offline_path):
-            selected_audio.current = filename
-            temp_audio_path.current = None
-            page.update()
-        elif os.path.exists(temp_path):
-            selected_audio.current = filename
-            temp_audio_path.current = temp_path
+    def select_audio_file(filepath):
+        if filepath and os.path.exists(filepath):
+            selected_audio.current = filepath
+            temp_audio_path.current = filepath
             page.update()
         else:
             status_text.value = "Selected audio file not found."
             page.update()
 
     def play_audio(e=None):
-        # Play from offline_audio if selected, else play temp audio if exists
-        filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
-        offline_path = os.path.join(ASSETS_DIR, filename) if filename else None
-        temp_path = os.path.join(tempfile.gettempdir(), filename) if filename else None
-        if filename and offline_path and os.path.exists(offline_path):
+        filepath = selected_audio.current
+        if filepath and os.path.exists(filepath):
             page.overlay.clear()
-            page.overlay.append(ft.Audio(src=offline_path, autoplay=True))
-            page.update()
-            highlighting_active.set()
-            threading.Thread(target=highlight_words_during_audio, daemon=True).start()
-        elif filename and temp_path and os.path.exists(temp_path):
-            page.overlay.clear()
-            page.overlay.append(ft.Audio(src=temp_path, autoplay=True))
+            page.overlay.append(ft.Audio(src=filepath, autoplay=True))
             page.update()
             highlighting_active.set()
             threading.Thread(target=highlight_words_during_audio, daemon=True).start()
@@ -180,64 +164,56 @@ def main(page: ft.Page):
 
     def download_audio(e=None):
         desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-        filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
-        if not filename:
-            status_text.value = "No audio file to download."
+        filepath = selected_audio.current
+        if not filepath or not os.path.exists(filepath):
+            status_text.value = "No audio file to download. File not found."
             page.update()
             return
-        # Look for file in temp or offline_audio
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
-        offline_path = os.path.join(ASSETS_DIR, filename)
-        dst = os.path.join(desktop, f"AI_TipKode_{filename}")
+        # Save to offline_audio and Desktop with a new unique filename
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_filename = f"audio_{timestamp}.wav"
+        offline_path = os.path.join(ASSETS_DIR, unique_filename)
+        dst = os.path.join(desktop, f"AI_TipKode_{unique_filename}")
         try:
-            src = None
-            if os.path.exists(offline_path):
-                src = offline_path
-            elif os.path.exists(temp_path):
-                src = temp_path
-            if src:
-                # Save to offline_audio if not already there
-                if not os.path.exists(offline_path):
-                    with open(src, "rb") as fsrc, open(offline_path, "wb") as fdst:
-                        fdst.write(fsrc.read())
-                    generated_audios.append(filename)
-                    audio_dropdown.options = [ft.dropdown.Option(f) for f in generated_audios]
-                    audio_dropdown.value = filename
-                    selected_audio.current = filename
-                # Save to desktop
-                with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
-                    fdst.write(fsrc.read())
-                status_text.value = f"Audio downloaded to {dst}"
-            else:
-                status_text.value = "No audio file to download. File not found."
+            # Save to offline_audio
+            with open(filepath, "rb") as fsrc, open(offline_path, "wb") as fdst:
+                fdst.write(fsrc.read())
+            # Save to desktop
+            with open(filepath, "rb") as fsrc, open(dst, "wb") as fdst:
+                fdst.write(fsrc.read())
+            generated_audios.append(unique_filename)
+            audio_dropdown.options = [ft.dropdown.Option(text=os.path.basename(offline_path), key=offline_path)]
+            audio_dropdown.value = offline_path
+            selected_audio.current = offline_path
+            status_text.value = f"Audio saved and downloaded to {dst}"
+            temp_audio_path.current = None  # Clear temp
         except Exception as ex:
             status_text.value = f"Download error: {ex}"
         page.update()
 
     def delete_audio(e=None):
-        filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
-        if not filename:
+        filepath = selected_audio.current
+        if not filepath or not os.path.exists(filepath):
             status_text.value = "No audio file selected to delete."
             page.update()
             return
-        file_path = os.path.join(ASSETS_DIR, filename)
         try:
-            if os.path.exists(file_path):
-                os.remove(file_path)
+            os.remove(filepath)
+            # Remove from generated_audios if present
+            filename = os.path.basename(filepath)
+            if filename in generated_audios:
                 generated_audios.remove(filename)
-                status_text.value = f"Deleted {filename}"
-                # Update dropdown
-                if generated_audios:
-                    audio_dropdown.options = [ft.dropdown.Option(f) for f in generated_audios]
-                    audio_dropdown.value = generated_audios[-1]
-                    selected_audio.current = generated_audios[-1]
-                else:
-                    audio_dropdown.options = []
-                    audio_dropdown.value = None
-                    selected_audio.current = None
-                page.overlay.clear()
+            status_text.value = f"Deleted {filename}"
+            # Update dropdown to remove the deleted file
+            remaining_files = [opt.key for opt in audio_dropdown.options if opt.key != filepath and os.path.exists(opt.key)]
+            audio_dropdown.options = [ft.dropdown.Option(text=os.path.basename(f), key=f) for f in remaining_files]
+            if remaining_files:
+                audio_dropdown.value = remaining_files[-1]
+                selected_audio.current = remaining_files[-1]
             else:
-                status_text.value = "File not found."
+                audio_dropdown.value = None
+                selected_audio.current = None
+            page.overlay.clear()
         except Exception as ex:
             status_text.value = f"Delete error: {ex}"
         page.update()
@@ -273,6 +249,11 @@ def main(page: ft.Page):
             engine.runAndWait()
 
             status_text.value = "Audio ready! (Not saved)"
+
+            # Store full path as value, but show only file name in dropdown
+            audio_dropdown.options = [ft.dropdown.Option(text=os.path.basename(temp_audio_path.current), key=temp_audio_path.current)]
+            audio_dropdown.value = temp_audio_path.current
+            selected_audio.current = temp_audio_path.current
 
             # Play the temp audio
             page.overlay.clear()
