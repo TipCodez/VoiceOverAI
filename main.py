@@ -32,6 +32,18 @@ MOOD_PRESETS = {
     "Calm": {"rate": 110, "volume": 0.9},
 }
 
+# Modern color palette
+BG_GRADIENT = ft.LinearGradient(
+    begin=ft.alignment.top_left,
+    end=ft.alignment.bottom_right,
+    colors=["#232946", "#5F6FFF", "#7C3AED", "#00BFAE"],
+    tile_mode="mirror"
+)
+ACCENT_COLOR = "#00BFAE"
+TEXT_COLOR = "#FFFFFF"
+SECONDARY_TEXT = "#E0E0E0"
+CONTAINER_BG = "#232946"
+
 # Build the Flet App
 def main(page: ft.Page):
     page.title = "Audiora"
@@ -39,7 +51,7 @@ def main(page: ft.Page):
     page.bgcolor = "#1E1E2F"
 
     # UI Widgets
-    title = ft.Text("Audiora", size=42, weight=ft.FontWeight.BOLD, color="#FFD700")
+    title = ft.Text("Audiora", size=44, weight=ft.FontWeight.BOLD, color=ACCENT_COLOR, animate_opacity=400)
 
     text_input = ft.TextField(
         label="Enter your text here...",
@@ -49,32 +61,39 @@ def main(page: ft.Page):
         max_lines=4,
         min_lines=2,
         text_align="left",
-        bgcolor="#23234A",
-        color="#FFD700",
+        bgcolor=CONTAINER_BG,
+        color=TEXT_COLOR,
         border_radius=18,
-        border_color="#FFD700"
+        border_color=ACCENT_COLOR,
+        animate_opacity=400
     )
 
     voice_selection = ft.Dropdown(
         label="Choose Voice",
         options=[ft.dropdown.Option(name) for name in VOICE_OPTIONS.keys()],
         width=350,
-        bgcolor="#23234A",
-        color="#FFD700",
-        value=list(VOICE_OPTIONS.keys())[0]
+        bgcolor=CONTAINER_BG,
+        color=ACCENT_COLOR,
+        value=list(VOICE_OPTIONS.keys())[0],
+        border_color=ACCENT_COLOR,
+        border_radius=12,
+        animate_opacity=400
     )
 
     mood_selection = ft.Dropdown(
         label="Choose Mood",
         options=[ft.dropdown.Option(mood) for mood in MOOD_PRESETS.keys()],
         width=350,
-        bgcolor="#23234A",
-        color="#FFD700",
-        value="Neutral"
+        bgcolor=CONTAINER_BG,
+        color=ACCENT_COLOR,
+        value="Neutral",
+        border_color=ACCENT_COLOR,
+        border_radius=12,
+        animate_opacity=400
     )
 
     speed_slider = ft.Slider(
-        min=50, max=300, value=150, divisions=10, label="{value} wpm", active_color="#FFD700"
+        min=50, max=300, value=150, divisions=10, label="{value} wpm", active_color=ACCENT_COLOR, thumb_color=ACCENT_COLOR, animate_opacity=400
     )
 
     # State
@@ -89,8 +108,8 @@ def main(page: ft.Page):
         color="#FFD700",
         on_change=lambda e: select_audio_file(e.control.value)
     )
-    status_text = ft.Text("", color="#FFD700")
-    loading_indicator = ft.ProgressRing(visible=False, color="#FFD700")
+    status_text = ft.Text("", color=ACCENT_COLOR, animate_opacity=400)
+    loading_indicator = ft.ProgressRing(visible=False, color=ACCENT_COLOR)
     highlighting_active = threading.Event()
     word_spans = ft.Ref()
     word_spans.current = None
@@ -350,35 +369,38 @@ def main(page: ft.Page):
     def import_text_file(e=None):
         file_picker.pick_files(allow_multiple=False, allowed_extensions=['txt', 'docx', 'pdf'])
 
-    # Buttons
-    btn_play = ft.IconButton(icon=ft.Icons.PLAY_ARROW, tooltip="Play", on_click=play_audio, icon_color="#FFD700")
-    btn_pause = ft.IconButton(icon=ft.Icons.PAUSE, tooltip="Pause", on_click=pause_audio, icon_color="#FFD700")
-    btn_unpause = ft.IconButton(icon=ft.Icons.REPLAY, tooltip="Unpause", on_click=unpause_audio, icon_color="#FFD700")
-    btn_download = ft.IconButton(icon=ft.Icons.DOWNLOAD, tooltip="Download", on_click=download_audio, icon_color="#FFD700")
-    btn_delete = ft.IconButton(icon=ft.Icons.DELETE, tooltip="Delete", on_click=delete_audio, icon_color="#FFD700")
+    # Buttons with animation
+    btn_play = ft.IconButton(icon=ft.Icons.PLAY_ARROW, tooltip="Play", on_click=play_audio, icon_color=ACCENT_COLOR, animate_scale=400)
+    btn_pause = ft.IconButton(icon=ft.Icons.PAUSE, tooltip="Pause", on_click=pause_audio, icon_color=ACCENT_COLOR, animate_scale=400)
+    btn_unpause = ft.IconButton(icon=ft.Icons.REPLAY, tooltip="Unpause", on_click=unpause_audio, icon_color=ACCENT_COLOR, animate_scale=400)
+    btn_download = ft.IconButton(icon=ft.Icons.DOWNLOAD, tooltip="Download", on_click=download_audio, icon_color=ACCENT_COLOR, animate_scale=400)
+    btn_delete = ft.IconButton(icon=ft.Icons.DELETE, tooltip="Delete", on_click=delete_audio, icon_color=ACCENT_COLOR, animate_scale=400)
     btn_enter = ft.ElevatedButton(
         "Generate Voice",
-        bgcolor="#FFD700",
-        color="#1E1E2F",
+        bgcolor=ACCENT_COLOR,
+        color=BG_GRADIENT.colors[0],
         on_click=save_and_play,
-        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15)),
+        animate_scale=400
     )
     btn_exit = ft.ElevatedButton(
         "Exit",
-        bgcolor="#FFD700",
-        color="#1E1E2F",
+        bgcolor=ACCENT_COLOR,
+        color=BG_GRADIENT.colors[0],
         on_click=exit_app,
-        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15)),
+        animate_scale=400
     )
     btn_import = ft.ElevatedButton(
         "Import Text",
-        bgcolor="#FFD700",
-        color="#1E1E2F",
+        bgcolor=ACCENT_COLOR,
+        color=BG_GRADIENT.colors[0],
         on_click=import_text_file,
-        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
+        style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15)),
+        animate_scale=400
     )
 
-    # Build a UI Container
+    # Build a UI Container with animation
     word_spans.current = build_word_spans()
     input_container = ft.Container(
         content=ft.Column(
@@ -389,7 +411,7 @@ def main(page: ft.Page):
                 word_spans.current,
                 voice_selection,
                 mood_selection,
-                ft.Text("Adjust Speed", size=18, weight=ft.FontWeight.BOLD, color="#FFD700"),
+                ft.Text("Adjust Speed", size=18, weight=ft.FontWeight.BOLD, color=ACCENT_COLOR, animate_opacity=400),
                 speed_slider, btn_import, btn_enter, audio_dropdown,
                 ft.Row([btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_exit], alignment=ft.MainAxisAlignment.CENTER),
                 loading_indicator, status_text
@@ -399,20 +421,18 @@ def main(page: ft.Page):
         ),
         padding=28,
         border_radius=28,
-        bgcolor="#23234A",
-        shadow=ft.BoxShadow(blur_radius=18, spread_radius=4, color="#FFD700", offset=ft.Offset(0, 6)),
-        animate=400
+        bgcolor=CONTAINER_BG,
+        shadow=ft.BoxShadow(blur_radius=18, spread_radius=4, color=ACCENT_COLOR, offset=ft.Offset(0, 6)),
+        animate=ft.Animation(400, "easeInOut"),
+        animate_opacity=400,
+        animate_scale=400
     )
 
     # Gradient background
     gradient_bg = ft.Container(
         expand=True,
-        gradient=ft.LinearGradient(
-            begin=ft.alignment.top_left,
-            end=ft.alignment.bottom_right,
-            colors=["#1E1E2F", "#3A3A6A", "#6A1B9A", "#FFD700", "#FF8A65"],
-            tile_mode="mirror"
-        ),
+        gradient=BG_GRADIENT,
+        animate_opacity=400
     )
 
     # Add gradient background and main content
