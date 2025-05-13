@@ -58,4 +58,7 @@ This is the offline version of **Audiora**, a beautiful, modern text-to-speech (
 - **Delete:** If you delete an audio file, it is removed from both the dropdown and disk.
 
 ## License
-MIT License 
+MIT License
+
+## Exit Notification
+Now, when the app exits, the message will be clear, compact, and centered. It will be smaller and visually appealing.

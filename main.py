@@ -378,17 +378,6 @@ def main(page: ft.Page):
         style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=15))
     )
 
-    # Settings (dummy for now)
-    def open_settings(e):
-        pass
-    btn_settings = ft.IconButton(
-        icon=ft.Icons.SETTINGS,
-        tooltip="Settings",
-        on_click=open_settings,
-        icon_color="#FFD700",
-        disabled=False
-    )
-
     # Build a UI Container
     word_spans.current = build_word_spans()
     input_container = ft.Container(
@@ -402,7 +391,7 @@ def main(page: ft.Page):
                 mood_selection,
                 ft.Text("Adjust Speed", size=18, weight=ft.FontWeight.BOLD, color="#FFD700"),
                 speed_slider, btn_import, btn_enter, audio_dropdown,
-                ft.Row([btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_settings, btn_exit], alignment=ft.MainAxisAlignment.CENTER),
+                ft.Row([btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_exit], alignment=ft.MainAxisAlignment.CENTER),
                 loading_indicator, status_text
             ],
             spacing=18,
@@ -435,6 +424,11 @@ def main(page: ft.Page):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         )
     )
+
+    # Set main controls to defaults on app start
+    voice_selection.value = list(VOICE_OPTIONS.keys())[0]
+    mood_selection.value = list(MOOD_PRESETS.keys())[0]
+    speed_slider.value = 150
     page.update()
 
 if __name__ == "__main__":
