@@ -1,6 +1,6 @@
-# AI TipKode - Offline Text-to-Speech App (pyttsx3)
+# Audiora - Offline Text-to-Speech App (pyttsx3)
 
-This is the offline version of AI TipKode, a beautiful, modern text-to-speech (TTS) application built with Python and Flet. It uses the local pyttsx3 engine, so you can generate speech without an internet connection.
+This is the offline version of **Audiora**, a beautiful, modern text-to-speech (TTS) application built with Python and Flet. It uses the local pyttsx3 engine, so you can generate speech without an internet connection.
 
 ## Features
 - Convert text to speech using your system's voices (offline)
@@ -39,7 +39,7 @@ This is the offline version of AI TipKode, a beautiful, modern text-to-speech (T
 2. **Enter your text, select voice/mood, and click 'Generate Voice'.**
 3. **Play, pause, resume, download, or delete any generated audio from the dropdown.**
 4. **Use the dropdown to select and play any previously generated audio.**
-5. **Click 'Exit' to close the app.**
+5. **Click 'Exit' to close Audiora.**
 
 ## Requirements
 - Python 3.8+
@@ -59,3 +59,5 @@ This is the offline version of AI TipKode, a beautiful, modern text-to-speech (T
 
 ## License
 MIT License 
+
+page.title = "Audiora" 

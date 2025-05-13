@@ -34,12 +34,12 @@ MOOD_PRESETS = {
 
 # Build the Flet App
 def main(page: ft.Page):
-    page.title = "AI TipKode (Offline)"
+    page.title = "Audiora"
     page.padding = 40
     page.bgcolor = "#1E1E2F"
 
     # UI Widgets
-    title = ft.Text("AI TipKode (Offline)", size=42, weight=ft.FontWeight.BOLD, color="#FFD700")
+    title = ft.Text("Audiora", size=42, weight=ft.FontWeight.BOLD, color="#FFD700")
 
     text_input = ft.TextField(
         label="Enter your text here...",
