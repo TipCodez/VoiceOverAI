@@ -6,7 +6,7 @@ import time
 import datetime
 import sys
 import tempfile
-from pydub import AudioSegment
+# import pydub
 
 # Setup pyttsx3 engine
 engine = pyttsx3.init()
@@ -133,9 +133,16 @@ def main(page: ft.Page):
     text_input.on_change = on_text_input_change
 
     def select_audio_file(filename):
-        if filename and os.path.exists(os.path.join(ASSETS_DIR, filename)):
+        # Look for file in temp or offline_audio
+        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        offline_path = os.path.join(ASSETS_DIR, filename)
+        if os.path.exists(offline_path):
             selected_audio.current = filename
-            temp_audio_path.current = None  # Clear temp audio when selecting from saved
+            temp_audio_path.current = None
+            page.update()
+        elif os.path.exists(temp_path):
+            selected_audio.current = filename
+            temp_audio_path.current = temp_path
             page.update()
         else:
             status_text.value = "Selected audio file not found."
@@ -144,15 +151,17 @@ def main(page: ft.Page):
     def play_audio(e=None):
         # Play from offline_audio if selected, else play temp audio if exists
         filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
-        if filename and os.path.exists(os.path.join(ASSETS_DIR, filename)):
+        offline_path = os.path.join(ASSETS_DIR, filename) if filename else None
+        temp_path = os.path.join(tempfile.gettempdir(), filename) if filename else None
+        if filename and offline_path and os.path.exists(offline_path):
             page.overlay.clear()
-            page.overlay.append(ft.Audio(src=os.path.join(ASSETS_DIR, filename), autoplay=True))
+            page.overlay.append(ft.Audio(src=offline_path, autoplay=True))
             page.update()
             highlighting_active.set()
             threading.Thread(target=highlight_words_during_audio, daemon=True).start()
-        elif temp_audio_path.current and os.path.exists(temp_audio_path.current):
+        elif filename and temp_path and os.path.exists(temp_path):
             page.overlay.clear()
-            page.overlay.append(ft.Audio(src=temp_audio_path.current, autoplay=True))
+            page.overlay.append(ft.Audio(src=temp_path, autoplay=True))
             page.update()
             highlighting_active.set()
             threading.Thread(target=highlight_words_during_audio, daemon=True).start()
@@ -171,45 +180,38 @@ def main(page: ft.Page):
 
     def download_audio(e=None):
         desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-        # If temp audio exists and not yet saved, save to offline_audio and desktop
-        if temp_audio_path.current and os.path.exists(temp_audio_path.current):
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            unique_filename = f"audio_{timestamp}.mp3"
-            offline_path = os.path.join(ASSETS_DIR, unique_filename)
-            dst = os.path.join(desktop, f"AI_TipKode_{unique_filename}")
-            try:
-                # Save to offline_audio
-                with open(temp_audio_path.current, "rb") as fsrc, open(offline_path, "wb") as fdst:
-                    fdst.write(fsrc.read())
-                # Save to desktop
-                with open(temp_audio_path.current, "rb") as fsrc, open(dst, "wb") as fdst:
-                    fdst.write(fsrc.read())
-                generated_audios.append(unique_filename)
-                audio_dropdown.options = [ft.dropdown.Option(f) for f in generated_audios]
-                audio_dropdown.value = unique_filename
-                selected_audio.current = unique_filename
-                status_text.value = f"Audio saved and downloaded to {dst}"
-                temp_audio_path.current = None  # Clear temp
-            except Exception as ex:
-                status_text.value = f"Download error: {ex}"
-        else:
-            # Download from offline_audio if already saved
-            filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
-            if not filename:
-                status_text.value = "No audio file to download."
-                page.update()
-                return
-            src = os.path.join(ASSETS_DIR, filename)
-            dst = os.path.join(desktop, f"AI_TipKode_{filename}")
-            try:
-                if os.path.exists(src):
-                    with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
+        filename = selected_audio.current or (generated_audios[-1] if generated_audios else None)
+        if not filename:
+            status_text.value = "No audio file to download."
+            page.update()
+            return
+        # Look for file in temp or offline_audio
+        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        offline_path = os.path.join(ASSETS_DIR, filename)
+        dst = os.path.join(desktop, f"AI_TipKode_{filename}")
+        try:
+            src = None
+            if os.path.exists(offline_path):
+                src = offline_path
+            elif os.path.exists(temp_path):
+                src = temp_path
+            if src:
+                # Save to offline_audio if not already there
+                if not os.path.exists(offline_path):
+                    with open(src, "rb") as fsrc, open(offline_path, "wb") as fdst:
                         fdst.write(fsrc.read())
-                    status_text.value = f"Audio downloaded to {dst}"
-                else:
-                    status_text.value = "No audio file to download."
-            except Exception as ex:
-                status_text.value = f"Download error: {ex}"
+                    generated_audios.append(filename)
+                    audio_dropdown.options = [ft.dropdown.Option(f) for f in generated_audios]
+                    audio_dropdown.value = filename
+                    selected_audio.current = filename
+                # Save to desktop
+                with open(src, "rb") as fsrc, open(dst, "wb") as fdst:
+                    fdst.write(fsrc.read())
+                status_text.value = f"Audio downloaded to {dst}"
+            else:
+                status_text.value = "No audio file to download. File not found."
+        except Exception as ex:
+            status_text.value = f"Download error: {ex}"
         page.update()
 
     def delete_audio(e=None):
@@ -253,36 +255,37 @@ def main(page: ft.Page):
             loading_indicator.visible = False
             page.update()
             return
+
         try:
-            # Use a temporary file for the audio
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_mp3:
-                temp_audio_path.current = temp_mp3.name
-            temp_wav = temp_audio_path.current.replace('.mp3', '.wav')
+            # Use a temporary file for the audio (wav)
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_wav:
+                temp_audio_path.current = temp_wav.name
+
+            # Set voice and properties
             engine.setProperty('voice', VOICE_OPTIONS[voice_selection.value])
             mood = mood_selection.value
             preset = MOOD_PRESETS.get(mood, MOOD_PRESETS["Neutral"])
             engine.setProperty('rate', int(preset["rate"]))
             engine.setProperty('volume', float(preset["volume"]))
-            engine.save_to_file(text, temp_wav)
+
+            # Generate audio (wav)
+            engine.save_to_file(text, temp_audio_path.current)
             engine.runAndWait()
-            try:
-                from pydub import AudioSegment
-                AudioSegment.from_wav(temp_wav).export(temp_audio_path.current, format="mp3")
-                os.remove(temp_wav)
-            except Exception:
-                temp_audio_path.current = temp_wav
+
             status_text.value = "Audio ready! (Not saved)"
-            loading_indicator.visible = False
+
             # Play the temp audio
             page.overlay.clear()
             page.overlay.append(ft.Audio(src=temp_audio_path.current, autoplay=True))
+            loading_indicator.visible = False
             page.update()
             highlighting_active.set()
             threading.Thread(target=highlight_words_during_audio, daemon=True).start()
+
         except Exception as ex:
             status_text.value = f"Error generating audio: {ex}"
             loading_indicator.visible = False
-        page.update()
+            page.update()
 
     def highlight_words_during_audio():
         words = text_input.value.split()
@@ -383,3 +386,4 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     ft.app(target=main)
+
