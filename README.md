@@ -41,6 +41,11 @@ This is the offline version of **Audiora**, a beautiful, modern text-to-speech (
 4. **Use the dropdown to select and play any previously generated audio.**
 5. **Click 'Exit' to close Audiora.**
 
+### Example Usage
+- Enter "Hello, world!" to generate a greeting.
+- Select the "Happy" mood to adjust the tone of the voice.
+- Click "Download" to save the audio to your desktop.
+
 ## Requirements
 - Python 3.8+
 - No internet required for TTS generation

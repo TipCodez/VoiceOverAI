@@ -11,7 +11,11 @@ import PyPDF2
 import docx
 
 # Setup pyttsx3 engine
-engine = pyttsx3.init()
+try:
+    engine = pyttsx3.init()
+except Exception as e:
+    print(f"Error initializing TTS engine: {e}")
+    sys.exit(1)
 voices = engine.getProperty('voices')
 
 # Build a list of available voices
@@ -56,10 +60,10 @@ def main(page: ft.Page):
     text_input = ft.TextField(
         label="Enter your text here...",
         width=600,
-        height=100,
+        height=180,
         multiline=True,
-        max_lines=4,
-        min_lines=2,
+        max_lines=8,
+        min_lines=4,
         text_align="left",
         bgcolor=CONTAINER_BG,
         color=TEXT_COLOR,
@@ -71,7 +75,7 @@ def main(page: ft.Page):
     voice_selection = ft.Dropdown(
         label="Choose Voice",
         options=[ft.dropdown.Option(name) for name in VOICE_OPTIONS.keys()],
-        width=350,
+        width=200,
         bgcolor=CONTAINER_BG,
         color=ACCENT_COLOR,
         value=list(VOICE_OPTIONS.keys())[0],
@@ -80,10 +84,14 @@ def main(page: ft.Page):
         animate_opacity=400
     )
 
+    if voice_selection.value not in VOICE_OPTIONS:
+        print(f"Selected voice '{voice_selection.value}' is not available.")
+        return
+
     mood_selection = ft.Dropdown(
         label="Choose Mood",
         options=[ft.dropdown.Option(mood) for mood in MOOD_PRESETS.keys()],
-        width=350,
+        width=200,
         bgcolor=CONTAINER_BG,
         color=ACCENT_COLOR,
         value="Neutral",
@@ -93,7 +101,7 @@ def main(page: ft.Page):
     )
 
     speed_slider = ft.Slider(
-        min=50, max=300, value=150, divisions=10, label="{value} wpm", active_color=ACCENT_COLOR, thumb_color=ACCENT_COLOR, animate_opacity=400
+        min=50, max=300, value=150, divisions=10, label="{value} wpm", active_color=ACCENT_COLOR, thumb_color=ACCENT_COLOR, animate_opacity=400, width=120
     )
 
     # State
@@ -103,9 +111,12 @@ def main(page: ft.Page):
     audio_dropdown = ft.Dropdown(
         label="Select Audio",
         options=[],
-        width=350,
-        bgcolor="#23234A",
-        color="#FFD700",
+        width=600,  # Slightly expanded width
+        bgcolor=CONTAINER_BG,
+        color=ACCENT_COLOR,
+        border_color=ACCENT_COLOR,
+        border_radius=12,
+        text_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD),
         on_change=lambda e: select_audio_file(e.control.value)
     )
     status_text = ft.Text("", color=ACCENT_COLOR, animate_opacity=400)
@@ -406,17 +417,29 @@ def main(page: ft.Page):
         content=ft.Column(
             controls=[
                 ft.Row([
-                    ft.Container(content=text_input, padding=ft.Padding(16, 12, 16, 12))
+                    ft.Container(content=text_input, padding=ft.Padding(56, 12, 16, 12))
                 ], alignment=ft.MainAxisAlignment.CENTER),
                 word_spans.current,
-                voice_selection,
-                mood_selection,
-                ft.Text("Adjust Speed", size=18, weight=ft.FontWeight.BOLD, color=ACCENT_COLOR, animate_opacity=400),
-                speed_slider, btn_import, btn_enter, audio_dropdown,
-                ft.Row([btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_exit], alignment=ft.MainAxisAlignment.CENTER),
-                loading_indicator, status_text
+                ft.Row([
+                    voice_selection,
+                    mood_selection,
+                    ft.Column([
+                        ft.Text("Speed", size=14, color=ACCENT_COLOR, weight=ft.FontWeight.BOLD),
+                        speed_slider
+                    ], alignment=ft.MainAxisAlignment.CENTER)
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=18),
+                ft.Row([
+                    btn_import,
+                    btn_enter
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=18),
+                audio_dropdown,
+                ft.Row([
+                    btn_play, btn_pause, btn_unpause, btn_download, btn_delete, btn_exit
+                ], alignment=ft.MainAxisAlignment.CENTER, spacing=8),
+                loading_indicator,
+                status_text
             ],
-            spacing=18,
+            spacing=8,
             alignment=ft.MainAxisAlignment.CENTER
         ),
         padding=28,
@@ -449,6 +472,11 @@ def main(page: ft.Page):
     voice_selection.value = list(VOICE_OPTIONS.keys())[0]
     mood_selection.value = list(MOOD_PRESETS.keys())[0]
     speed_slider.value = 150
+    text_input.width = None
+    voice_selection.width = None
+    mood_selection.width = None
+    audio_dropdown.width = None
+    speed_slider.width = 120
     page.update()
 
 if __name__ == "__main__":
